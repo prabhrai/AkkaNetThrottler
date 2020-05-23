@@ -31,9 +31,8 @@
               message =>
                 {
                     InitTimerAndCounter();
-
                     SendMessage(message);
-
+            
                     SetNextState();
                 });
 
@@ -42,7 +41,7 @@
 
         public IStash Stash { get; set; }
 
-        private void Iddling()
+        private void Throttling()
         {
             Receive<Wrapper<TransformPhoneticTextMessage>>(message => { Stash.Stash(); });
 
@@ -75,20 +74,20 @@
 
         private void SetNextState()
         {
-            if (_numberOfMessages != _counter)
+            if (_numberOfMessages < _counter)
             {
-                Console.WriteLine(" Become(Throttling)");
                 Become(Throttling);
-                Stash.Unstash();
+                Stash.UnstashAll();
             }
             else
             {
+                Stash.Stash();
                 Console.WriteLine(" Become(Iddling)");
-                Become(Iddling);
+                Become(Throttling);
             }
         }
 
-        private void Throttling()
+        private void Running()
         {
             Console.WriteLine(" Became(Throttling)");
             Receive<Wrapper<TransformPhoneticTextMessage>>(
